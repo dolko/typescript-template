@@ -4,7 +4,10 @@
   "description": "",
   "dependencies": {
     "@types/lodash": "^4.14.119",
-    "lodash": "^4.17.11"
+    "@types/node": "^10.12.18",
+    "@types/nunjucks": "^3.1.0",
+    "lodash": "^4.17.11",
+    "nunjucks": "^3.1.7"
   },
   "devDependencies": {
     "@azure/functions": "1.0.1-beta1",
@@ -12,6 +15,7 @@
     "cross-var": "^1.1.0",
     "onchange": "^5.2.0",
     "rimraf": "^2.6.3",
+    "ts-node": "^8.0.1",
     "typescript": "^3.2.1"
   },
   "config": {
@@ -19,14 +23,16 @@
     "rootDir": "src"
   },
   "scripts": {
-    "build": "npm run clean && tsc && npm run build:configFiles && npm run build:extensions",
+    "build": "npm run clean && tsc -b src/app && npm run build:templates && npm run build:configFiles  && npm run build:extensions && npm run build:json",
+    "build:templates": "cross-var copyup -u 1 \"$npm_package_config_rootDir/**/*.njk\" $npm_package_config_outDir",
     "build:production": "npm run build && cross-var rimraf $npm_package_config_outDir/local.settings.json && cross-var copyfiles package.json $npm_package_config_outDir && cross-var cd $npm_package_config_outDir && npm install --production && cd .. && cross-var echo \"\nProduction build is ready in '$npm_package_config_outDir'.\n\"",
-    "build:configFiles": "cross-var copyup \"$npm_package_config_rootDir/**/*.json\" \"$npm_package_config_rootDir/**/*.csproj\" $npm_package_config_outDir",
-    "build:extensions": "cross-var dotnet build $npm_package_config_outDir",
+    "build:configFiles": "cross-var copyup -u 1 \"$npm_package_config_rootDir/**/*.json\" \"$npm_package_config_rootDir/**/*.csproj\" $npm_package_config_outDir",
+    "build:extensions": "cross-var dotnet build $npm_package_config_outDir/app",
+    "build:json": "node dist/app/app.js",
     "install:extensions": "npm run build && cross-var func extensions install --prefix $npm_package_config_outDir && cross-var copyup $npm_package_config_outDir/extensions.csproj $npm_package_config_rootDir",
     "install:extensions:force": "npm run build && cross-var func extensions install --prefix $npm_package_config_outDir --force && cross-var copyup $npm_package_config_outDir/extensions.csproj $npm_package_config_rootDir",
     "start": "npm run build && npm run start:host & npm run watch",
-    "start:host": "cross-var func host start --prefix $npm_package_config_outDir",
+    "start:host": "cross-var func host start --prefix $npm_package_config_outDir/app",
     "watch": "tsc -w & cross-var onchange \"$npm_package_config_rootDir/**/*.json\" \"$npm_package_config_rootDir/**/*.csproj\" -- npm run build:configFiles",
     "clean": "cross-var rimraf $npm_package_config_outDir",
     "test": "echo \"No tests yet...\"",

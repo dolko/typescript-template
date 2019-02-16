@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+      "composite": true,
+      //"declaration": true,
+      "target": "es6",
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "sourceMap": true,
+      "outDir": "../../dist/plus_plus",                       /* The root directory of output files.  */
+      "strict": true
+    }
+}
